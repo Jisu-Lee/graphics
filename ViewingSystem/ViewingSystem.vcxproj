@@ -140,6 +140,7 @@
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="InputDialog.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="StdAfx.cpp">
@@ -154,6 +155,7 @@
     <ResourceCompile Include="ViewingSystem.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="InputDialog.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="Resource.h" />

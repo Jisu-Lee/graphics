@@ -5,6 +5,7 @@
 #include "ViewingSystem.h"
 
 #include "MainFrm.h"
+#include "InputDialog.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -23,6 +24,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 		//    DO NOT EDIT what you see in these blocks of generated code !
 	ON_WM_CREATE()
 	//}}AFX_MSG_MAP
+	ON_COMMAND(ID_SETTINGS, &CMainFrame::OnSettings)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -110,3 +112,11 @@ void CMainFrame::Dump(CDumpContext& dc) const
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame message handlers
 
+
+
+void CMainFrame::OnSettings()
+{
+	// TODO: Add your command handler code here
+	InputDialog iDlg;
+	iDlg.DoModal();
+}
