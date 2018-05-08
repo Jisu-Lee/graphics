@@ -72,10 +72,12 @@ void CViewingSystemView::OnDraw(CDC* pDC)
 
 		CBitmap bmp;
 		bmp.CreateBitmap(pDoc->win.Width(), pDoc->win.Width(), 1, 0x20, NULL);
+
 		pDoc->memdc.CreateCompatibleDC(pDC);
 		pDoc->memdc.SelectObject(bmp);
 		pDoc->memdc.ExtFloodFill(0, 0, RGB(255, 255, 255), FLOODFILLBORDER);
 
+		pDoc->Rendering();
 		m_initState = false;
 	}
 

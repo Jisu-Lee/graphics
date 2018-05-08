@@ -59,15 +59,37 @@ CViewingSystemDoc::~CViewingSystemDoc()
 {
 }
 
+Vertex CViewingSystemDoc::getEye(){
+	return m_eye;
+}
+Vertex CViewingSystemDoc::getLookAt(){
+	return m_lookAt;
+}
+Vertex CViewingSystemDoc::getUp(){
+	return m_up;
+}
+
+void CViewingSystemDoc::updateEye(Vertex v){
+	m_eye = v;
+}
+
+void CViewingSystemDoc::updateLookAt(Vertex v){
+	m_lookAt = v;
+}
+
+void CViewingSystemDoc::updateUp(Vertex v){
+	m_up = v;
+}
 void CViewingSystemDoc::updateViewingMode(int v){
 	m_viewingMode = v;
 }
 
 void CViewingSystemDoc::initializeVertices(){
-	int i;
-	for (i = 0; i < m_numberOfVertices; i++){
-		m_vertices[i] = m_vertices_origin[i];
-	}
+	n = Normalization(m_lookAt - m_eye);
+	double a = DotProduct(m_up, n);
+	Vertex v_temp = m_up - n*a;
+	v = Normalization(v_temp);
+	w = CrossProduct(n, v);
 }
 
 double CViewingSystemDoc::updateTransXSum(double dist){
@@ -183,6 +205,62 @@ void CViewingSystemDoc::scale(double amount){
 	for (i = 0; i < m_numberOfVertices; i++){
 		m_vertices[i] = s*(m_vertices[i]);
 	}
+}
+
+void CViewingSystemDoc::initializeMatrix(){
+	R_1.m[0] = w.x;
+	R_1.m[1] = w.y;
+	R_1.m[2] = w.z;
+	R_1.m[3] = 0;
+	R_1.m[4] = v.x;
+	R_1.m[5] = v.y;
+	R_1.m[6] = v.z;
+	R_1.m[7] = 0;
+	R_1.m[8] = -n.x;
+	R_1.m[9] = -n.y;
+	R_1.m[10] = -n.z;
+	R_1.m[11] = 0;
+	R_1.m[12] = 0;
+	R_1.m[13] = 0;
+	R_1.m[14] = 0;
+	R_1.m[15] = 1;
+
+	T_1.m[0] = 1;
+	T_1.m[1] = 0;
+	T_1.m[2] = 0;
+	T_1.m[3] = -m_eye.x;
+	T_1.m[4] = 0;
+	T_1.m[5] = 1;
+	T_1.m[6] = 0;
+	T_1.m[7] = -m_eye.y;
+	T_1.m[8] = 0;
+	T_1.m[9] = 0;
+	T_1.m[10] = 1;
+	T_1.m[11] = -m_eye.z;
+	T_1.m[12] = 0;
+	T_1.m[13] = 0;
+	T_1.m[14] = 0;
+	T_1.m[15] = 1;
+
+	double n1 = -1.0, f = -500.0, r = 0.5;
+	double l = -0.5, t = 0.5, b = -0.5;
+
+	P.m[0] = 2.0 * n1 / (r - l);
+	P.m[1] = 0;
+	P.m[2] = (r + l) / (r - l);
+	P.m[3] = 0;
+	P.m[4] = 0;
+	P.m[5] = 2.0 * n1 / (t - b);
+	P.m[6] = (t + b) / (t - b);
+	P.m[7] = 0;
+	P.m[8] = 0;
+	P.m[9] = 0;
+	P.m[10] = -1.0 * (f + n1) / (f - n1);
+	P.m[11] = -2.0 * f*n1 / (f - n1);
+	P.m[12] = 0;
+	P.m[13] = 0;
+	P.m[14] = -1.0;
+	P.m[15] = 0;
 }
 
 BOOL CViewingSystemDoc::OnNewDocument()
@@ -315,27 +393,80 @@ void CViewingSystemDoc::Rendering()
 	memdc.FillRect(win, &CBrush(RGB(255, 255, 255)));
 
 	// 렌더링 모드에 따른 구현이 필요함
+	CPoint center = CPoint(win.Width()/2, win.Height()/2);
+	initializeVertices();
+	initializeMatrix();
 
+	axis = new Vertex[4];
+	axis[0] = Vertex(0, 0, 0);
+	axis[1] = Vertex(300, 0, 0);
+	axis[2] = Vertex(0, 300, 0);
+	axis[3] = Vertex(0, 0, 300);
+
+	int i;
+	for (i = 0; i < m_numberOfVertices; i++){
+		m_vertices[i] = T_1*(m_vertices_origin[i]);
+	}
+	for (i = 0; i < 4; i++){
+		axis[i] = T_1*(axis[i]);
+	}
+	for (i = 0; i < m_numberOfVertices; i++){
+		m_vertices[i] = R_1*(m_vertices[i]);
+	}
+	for (i = 0; i < 4; i++){
+		axis[i] = R_1*(axis[i]);
+	}
 	if (m_viewingMode == PARALLEL)
 	{
-		;
+		for (i = 0; i < m_numberOfVertices; i++){
+			m_vertices[i].x /= win.Width();
+			m_vertices[i].y /= win.Height();
+		}
+		for (i = 0; i < 4; i++){
+			axis[i].x /= win.Width();
+			axis[i].y /= win.Height();
+		}
 	}
 	else if (m_viewingMode == PERSPECTIVE)
 	{
-		;
+		for (i = 0; i < m_numberOfVertices; i++){
+			m_vertices[i] = P*(m_vertices[i]);
+		}
+		for (i = 0; i < 4; i++){
+			axis[i] = P*(axis[i]);
+		}
+	}
+
+	for (i = 0; i < m_numberOfVertices; i++){
+		m_vertices[i].x /= m_vertices[i].h;
+		m_vertices[i].y /= m_vertices[i].h;
+		m_vertices[i].z /= m_vertices[i].h;
+		m_vertices[i].h /= m_vertices[i].h;
+	}
+	for (i = 0; i < 4; i++){
+		axis[i].x /= axis[i].h;
+		axis[i].y /= axis[i].h;
+		axis[i].z /= axis[i].h;
+		axis[i].h /= axis[i].h;
 	}
 
 
-	CPoint center = CPoint(win.Width()/2, win.Height()/2);
+	CPoint drawingPoint[5];
+	drawingPoint[0] = CPoint(axis[1].x*center.x + center.x, -axis[1].y*center.y + center.y);
+	drawingPoint[1] = CPoint(axis[0].x*center.x + center.x, -axis[0].y*center.y + center.y);
+	drawingPoint[2] = CPoint(axis[2].x*center.x + center.x, -axis[2].y*center.y + center.y);
+	drawingPoint[3] = CPoint(axis[0].x*center.x + center.x, -axis[0].y*center.y + center.y);
+	drawingPoint[4] = CPoint(axis[3].x*center.x + center.x, -axis[3].y*center.y + center.y);
+	memdc.Polyline(drawingPoint, 5);
 
 	for (int i = 0; i < m_numberOfFaces; i++)
 	{
 		CPoint drawingPoint[4];
 
-		drawingPoint[0] = CPoint(int(m_vertices[m_faces[i].v1].x + center.x), int(-m_vertices[m_faces[i].v1].y + center.y));
-		drawingPoint[1] = CPoint(int(m_vertices[m_faces[i].v2].x + center.x), int(-m_vertices[m_faces[i].v2].y + center.y));
-		drawingPoint[2] = CPoint(int(m_vertices[m_faces[i].v3].x + center.x), int(-m_vertices[m_faces[i].v3].y + center.y));
-		drawingPoint[3] = CPoint(int(m_vertices[m_faces[i].v1].x + center.x), int(-m_vertices[m_faces[i].v1].y + center.y));
+		drawingPoint[0] = CPoint(int(m_vertices[m_faces[i].v1].x*center.x + center.x), int(-m_vertices[m_faces[i].v1].y*center.y + center.y));
+		drawingPoint[1] = CPoint(int(m_vertices[m_faces[i].v2].x*center.x + center.x), int(-m_vertices[m_faces[i].v2].y*center.y + center.y));
+		drawingPoint[2] = CPoint(int(m_vertices[m_faces[i].v3].x*center.x + center.x), int(-m_vertices[m_faces[i].v3].y*center.y + center.y));
+		drawingPoint[3] = CPoint(int(m_vertices[m_faces[i].v1].x*center.x + center.x), int(-m_vertices[m_faces[i].v1].y*center.y + center.y));
 
 		memdc.Polyline(drawingPoint, 4);
 	}

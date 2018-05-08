@@ -25,6 +25,8 @@ protected: // create from serialization only
 public:
 	Vertex *m_vertices;		// Object의 Vertex 정보를 저장하는 배열
 	Vertex *m_vertices_origin;
+	Vertex *axis;
+	Vertex *axis_origin;
 	Vertex *dist;
 	Face *m_faces;			// Object의 Face 정보를 저장하는 배열
 
@@ -41,6 +43,13 @@ public:
 	Vertex m_eye;			// 시점
 	Vertex m_lookAt;		// 바라보는곳
 	Vertex m_up;			// 위쪽의 방향
+	Vertex n;
+	Vertex v;
+	Vertex w;
+
+	Matrix R_1;
+	Matrix T_1;
+	Matrix P;
 
 	CRect win;
 
@@ -71,6 +80,7 @@ public:
 	void Z_trans(double dist);
 
 	void CViewingSystemDoc::initializeVertices();
+	void CViewingSystemDoc::initializeMatrix();
 
 	double CViewingSystemDoc::getTransXSum();
 	double CViewingSystemDoc::getTransYSum();
@@ -81,6 +91,14 @@ public:
 	void CViewingSystemDoc::scale(double amount);
 	
 	void CViewingSystemDoc::updateViewingMode(int v);
+
+	Vertex CViewingSystemDoc::getEye();
+	Vertex CViewingSystemDoc::getLookAt();
+	Vertex CViewingSystemDoc::getUp();
+
+	void CViewingSystemDoc::updateEye(Vertex v);
+	void CViewingSystemDoc::updateLookAt(Vertex v);
+	void CViewingSystemDoc::updateUp(Vertex v);
 
 	Vertex CrossProduct(Vertex a, Vertex b);	// 두 Vertex의 외적을 구하는 함수
 	double DotProduct(Vertex a, Vertex b);		// 두 Vertex의 내적을 구하는 함수
