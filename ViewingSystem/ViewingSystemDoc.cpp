@@ -468,7 +468,16 @@ void CViewingSystemDoc::Rendering()
 		drawingPoint[2] = CPoint(int(m_vertices[m_faces[i].v3].x*center.x + center.x), int(-m_vertices[m_faces[i].v3].y*center.y + center.y));
 		drawingPoint[3] = CPoint(int(m_vertices[m_faces[i].v1].x*center.x + center.x), int(-m_vertices[m_faces[i].v1].y*center.y + center.y));
 
+		CBrush brush, *pOldBrush;
+		brush.CreateSolidBrush(RGB(23, 87, 234));
+		pOldBrush = memdc.SelectObject(&brush);
+		//memdc.SelectStockObject(NULL_PEN);
+		memdc.Polygon(drawingPoint, 3);
+		memdc.SelectObject(pOldBrush);
+		brush.DeleteObject(); 
+
 		memdc.Polyline(drawingPoint, 4);
+
 	}
 
 	CString str1, str2, str3, str4;
@@ -481,6 +490,8 @@ void CViewingSystemDoc::Rendering()
 	memdc.TextOut(10, 30, str2);
 	memdc.TextOut(10, 50, str3);
 	memdc.TextOut(10, 70, str4);
+
+	
 
 }
 
